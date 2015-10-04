@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/jdbc
+       http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+       http://www.springframework.org/schema/task
+       http://www.springframework.org/schema/task/spring-task-3.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:app.properties"/>
+
+    <bean id="dataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.postgresql.Driver"/>
+        <property name="url" value="jdbc:postgresql://localhost:5432/test_database"/>
+        <property name="username" value="test_user"/>
+        <property name="password" value="qwerty"/>
+    </bean>
+
+    <jdbc:initialize-database data-source="dataSource" enabled="true">
+        <jdbc:script location="classpath:db-schema.sql"/>
+        <!--<jdbc:script location="classpath:db-test-data.sql"/>-->
+    </jdbc:initialize-database>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="intervalDao" class="dao.IntervalDaoImpl">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="transactionManager" ref="transactionManager"/>
+    </bean>
+
+    <bean id="interval" class="model.Interval" scope="prototype">
+        <constructor-arg name="start" value="#{new java.util.Random().nextInt(${interval.random.upper.bound})}"/>
+        <constructor-arg name="end" value="#{new java.util.Random().nextInt(${interval.random.upper.bound})}"/>
+    </bean>
+
+    <bean id="intervalsGenerator" class="utils.IntervalsGenerator">
+        <property name="generatedIntervals" value="${generator.number.of.generated.intervals.per.iteration}"/>
+        <property name="dao" ref="intervalDao"/>
+        <lookup-method name="createInterval" bean="interval"/>
+    </bean>
+
+    <bean id="intervalsMergerWorker" class="utils.IntervalsMergerWorker">
+        <property name="dao" ref="intervalDao"/>
+        <property name="offset" value="0"/>
+        <property name="targetIterationsNumber" value="${worker.target.iterations.number}"/>
+    </bean>
+
+
+    <bean id="intervalMerger" class="utils.IntervalsMerger">
+        <property name="parallelWorkers" value="${merger.workers.number}"/>
+        <property name="delay" value="${merger.delay.between.iterations.millis}"/>
+        <property name="initialDelay" value="${merger.initial.delay.millis}"/>
+        <lookup-method name="getWorker" bean="intervalsMergerWorker"/>
+    </bean>
+
+    <task:scheduled-tasks>
+        <task:scheduled ref="intervalsGenerator" method="generateIntervals"
+                        fixed-delay="${generator.delay.between.iterations.millis}"/>
+    </task:scheduled-tasks>
+
+
+</beans>
