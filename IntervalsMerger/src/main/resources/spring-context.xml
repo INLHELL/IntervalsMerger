@@ -48,15 +48,15 @@
         <lookup-method name="createInterval" bean="interval"/>
     </bean>
 
-    <bean id="intervalsMergerWorker" class="utils.IntervalsMergerWorker">
+    <bean id="intervalsMergerWorker" class="utils.IntervalsMergerWorker" scope="prototype">
+        <constructor-arg name="totalNumberOfWorkers" value="${merger.total.workers.number}"/>
         <property name="dao" ref="intervalDao"/>
-        <property name="offset" value="0"/>
         <property name="targetIterationsNumber" value="${worker.target.iterations.number}"/>
     </bean>
 
 
     <bean id="intervalMerger" class="utils.IntervalsMerger">
-        <property name="parallelWorkers" value="${merger.workers.number}"/>
+        <property name="parallelWorkers" value="${merger.total.workers.number}"/>
         <property name="delay" value="${merger.delay.between.iterations.millis}"/>
         <property name="initialDelay" value="${merger.initial.delay.millis}"/>
         <lookup-method name="getWorker" bean="intervalsMergerWorker"/>

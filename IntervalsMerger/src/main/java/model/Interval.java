@@ -1,8 +1,5 @@
 package model;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.Range;
-
 public class Interval {
     private final int start;
     private final int end;
@@ -38,8 +35,7 @@ public class Interval {
 
         Interval interval = (Interval) o;
 
-        if (start != interval.start) return false;
-        return end == interval.end;
+        return start == interval.start && end == interval.end;
 
     }
 

@@ -3,7 +3,6 @@ package main;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import utils.IntervalsGenerator;
 import utils.IntervalsMerger;
-import utils.IntervalsMergerWorker;
 
 public class Main {
     public static void main(String[] args) {

@@ -4,12 +4,12 @@
     <!-- Send debug messages to System.out -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%M\(\):%L - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss} [%thread] %-5level %class{16}.%M\(\):%L %msg%n</pattern>
         </encoder>
     </appender>
 
     <!-- By default, the level of the root level is set to DEBUG -->
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

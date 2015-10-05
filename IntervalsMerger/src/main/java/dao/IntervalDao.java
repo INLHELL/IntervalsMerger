@@ -15,7 +15,9 @@ public interface IntervalDao {
 
     boolean markAsUsed(Interval interval);
 
-    void unmarkAsUsed(Interval interval);
+    boolean unmarkAsUsed(Interval interval);
+
+    int getTotalNumberOfIntervals();
 
     boolean findOverlappedAndReplace(Interval interval);
 

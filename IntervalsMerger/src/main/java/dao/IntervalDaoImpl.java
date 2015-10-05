@@ -77,7 +77,7 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         try {
             String query = "UPDATE test_interval SET used = TRUE WHERE start_i = ? AND end_i = ? AND used = FALSE;";
             final int rowsUpdated = getJdbcTemplate().update(query, new Integer[]{interval.getStart(), interval.getEnd()});
-            wasMarked = rowsUpdated > 0 ? true : false;
+            wasMarked = rowsUpdated > 0;
             LOGGER.info("Interval: {},  was marked as used: {}", interval, wasMarked);
         } catch (DataAccessException e) {
             LOGGER.warn("Marking interval: {} as used was failed: {}", interval, e.getMessage());
@@ -86,15 +86,30 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
     }
 
     @Override
-    public void unmarkAsUsed(Interval interval) {
-        boolean wasMarked = false;
+    public boolean unmarkAsUsed(Interval interval) {
+        boolean wasUnmarked = false;
         try {
             String query = "UPDATE test_interval SET used = FALSE WHERE start_i = ? AND end_i = ? AND used = TRUE;";
             final int rowsUpdated = getJdbcTemplate().update(query, new Integer[]{interval.getStart(), interval.getEnd()});
-            LOGGER.info("Interval: {},  was marked as unused: {}", interval, wasMarked);
+            wasUnmarked = rowsUpdated > 0;
+            LOGGER.info("Interval: {},  was marked as unused: {}, rows updated: {}", interval, wasUnmarked, rowsUpdated);
         } catch (DataAccessException e) {
             LOGGER.warn("Marking interval: {} as unused was failed: {}", interval, e.getMessage());
         }
+        return wasUnmarked;
+    }
+
+    @Override
+    public int getTotalNumberOfIntervals() {
+        int rowCount = 0;
+        try {
+            String query = "SELECT COUNT(*) FROM test_interval;";
+            rowCount = getJdbcTemplate().queryForObject(query, Integer.class);
+            LOGGER.info("Number of intervals stored in database: {}", rowCount);
+        } catch (DataAccessException e) {
+            LOGGER.warn("Count number of intervals stored in database failed: {}", e.getMessage());
+        }
+        return rowCount;
     }
 
     @Override
@@ -118,7 +133,8 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
                     delete(interval);
                     delete(overlappedInterval);
                     final Interval mergedInterval = interval.mergeWith(overlappedInterval);
-                    LOGGER.info("Inserting new merged interval: {} <- {} /\\ {}", mergedInterval, interval, overlappedInterval);
+                    LOGGER.info("Inserting new merged interval: {} <-- {} /\\ {}", mergedInterval, interval,
+                            overlappedInterval);
                     insert(mergedInterval);
                     LOGGER.info("Interval: {} was successfully inserted!", mergedInterval);
                     wasSucceeded = true;
@@ -127,7 +143,7 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
             transactionManager.commit(transactionStatus);
         } catch (Exception e) {
             transactionManager.rollback(transactionStatus);
-            logger.error("Transactions for finding overlapped interval failed", e);
+            logger.error("Transactions for finding and replacing overlapped interval failed", e);
         }
         return wasSucceeded;
     }
