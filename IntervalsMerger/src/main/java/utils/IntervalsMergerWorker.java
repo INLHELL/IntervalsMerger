@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.Optional;
 
 public class IntervalsMergerWorker implements Runnable {
@@ -47,16 +46,16 @@ public class IntervalsMergerWorker implements Runnable {
                         LOGGER.info("Result of merge: {}, startOffset: {}, targetIterationsNumber: {}", wasMerged, startOffset, targetIterationsNumber);
                         mergeIterCounter++;
                     } else {
-                        dao.unmarkAsUsed(interval);
+                        dao.markAsUnused(interval);
                         failsIterCounter++;
                     }
                 } else {
                     LOGGER.info("Reset startOffset to zero");
-                    startOffset = -1;
+//                    startOffset = -1;
                     failsIterCounter++;
                 }
                 numberOfIterations++;
-                startOffset++;
+//                startOffset++;
             }
             collectStatistics();
         } catch (RuntimeException e) {
@@ -74,6 +73,23 @@ public class IntervalsMergerWorker implements Runnable {
         resetCounters();
     }
 
+    public void setTargetIterationsNumber(int targetIterationsNumber) {
+        this.targetIterationsNumber = targetIterationsNumber;
+    }
+
+    public void setDao(IntervalDao dao) {
+        this.dao = dao;
+    }
+
+    public void setWorkerNumber(int workerNumber) {
+        this.workerNumber = workerNumber;
+    }
+
+    public void interrupt() {
+        this.isInterrupted = true;
+    }
+
+
     private void incrementCounters() {
         globalIter++;
         mergeTotalCounter += mergeIterCounter;
@@ -90,23 +106,7 @@ public class IntervalsMergerWorker implements Runnable {
         final int totalNumberOfIntervals = dao.getTotalNumberOfIntervals();
         final int numberOfDiscoveredIntervals = totalNumberOfIntervals / totalNumberOfWorkers;
         startOffset = numberOfDiscoveredIntervals * (workerNumber - 1);
-        LOGGER.info("Start offset: {}", startOffset);
+        LOGGER.warn("Start offset: {}, total intervals: {}", startOffset, totalNumberOfIntervals);
         return startOffset;
-    }
-
-    public void setTargetIterationsNumber(int targetIterationsNumber) {
-        this.targetIterationsNumber = targetIterationsNumber;
-    }
-
-    public void setDao(IntervalDao dao) {
-        this.dao = dao;
-    }
-
-    public void setWorkerNumber(int workerNumber) {
-        this.workerNumber = workerNumber;
-    }
-
-    public void interrupt() {
-        this.isInterrupted = true;
     }
 }

@@ -19,6 +19,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
     private static final String END_COLUMN = "end_i";
     private PlatformTransactionManager transactionManager;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void insert(Interval interval) {
         try {
@@ -30,6 +33,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void delete(Interval interval) {
         try {
@@ -41,6 +47,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<Interval> select(int offset) {
         Interval result = null;
@@ -56,6 +65,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         return Optional.ofNullable(result);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<Interval> findOverlapped(Interval interval) {
         Interval result = null;
@@ -71,6 +83,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         return Optional.ofNullable(result);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean markAsUsed(Interval interval) {
         boolean wasMarked = false;
@@ -85,8 +100,11 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         return wasMarked;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean unmarkAsUsed(Interval interval) {
+    public boolean markAsUnused(Interval interval) {
         boolean wasUnmarked = false;
         try {
             String query = "UPDATE test_interval SET used = FALSE WHERE start_i = ? AND end_i = ? AND used = TRUE;";
@@ -99,6 +117,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         return wasUnmarked;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getTotalNumberOfIntervals() {
         int rowCount = 0;
@@ -112,6 +133,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         return rowCount;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean findOverlappedAndReplace(Interval interval) {
         boolean wasSucceeded = false;
@@ -148,6 +172,9 @@ public class IntervalDaoImpl extends JdbcDaoSupport implements IntervalDao {
         return wasSucceeded;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<Interval> selectAndMarkAsUsed(int offset) {
         Optional<Interval> intervalOptional = Optional.empty();
